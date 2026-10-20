@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="mn">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Kotlin болон Android хичээлийн 15 асуулттай санамсаргүй тест" />
+    <title>Kotlin Quiz</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="app-bar">
+        <a class="brand" href="index.html" aria-label="Kotlin Quiz эхлэл">
+          <span class="brand-mark" aria-hidden="true">K</span>
+          <span>
+            <strong>Kotlin Quiz</strong>
+            <small>Android шалгалтын бэлтгэл</small>
+          </span>
+        </a>
+
+        <div class="header-stat" aria-label="Асуултын сангийн хэмжээ">
+          <span id="bank-count">0</span>
+          <small>асуултын сан</small>
+        </div>
+      </header>
+
+      <section id="quiz-screen" class="quiz-screen" aria-labelledby="question-title">
+        <div class="progress-panel">
+          <div class="progress-copy">
+            <span id="progress-label">Асуулт 1 / 15</span>
+            <span id="answered-label">0 хариулсан</span>
+          </div>
+          <div class="progress-track" aria-hidden="true">
+            <div id="progress-fill" class="progress-fill"></div>
+          </div>
+          <div id="progress-steps" class="progress-steps" aria-label="Шалгалтын явц"></div>
+        </div>
+
+        <article class="question-panel">
+          <div class="question-meta">
+            <span id="topic-label" class="topic-label">Kotlin</span>
+            <span id="question-type" class="question-type">Нэг хариулт</span>
+          </div>
+
+          <h1 id="question-title" class="question-title"></h1>
+          <p id="selection-hint" class="selection-hint" hidden>
+            Нэгээс олон зөв хариулттай.
+          </p>
+
+          <form id="options-form" class="options-list" aria-describedby="selection-hint"></form>
+
+          <div class="question-actions">
+            <button id="previous-button" class="button button-secondary" type="button">
+              <span aria-hidden="true">←</span>
+              Өмнөх
+            </button>
+            <button id="next-button" class="button button-primary" type="button" disabled>
+              Дараах
+              <span aria-hidden="true">→</span>
+            </button>
+          </div>
+        </article>
+      </section>
+
+      <section id="result-screen" class="result-screen" aria-labelledby="result-title" hidden>
+        <div class="result-summary">
+          <div id="score-ring" class="score-ring" aria-label="Шалгалтын оноо">
+            <strong id="score-percent">0%</strong>
+            <span id="score-fraction">0 / 15</span>
+          </div>
+
+          <div class="result-copy">
+            <span class="result-kicker">Шалгалт дууслаа</span>
+            <h1 id="result-title">Үр дүн</h1>
+            <p id="result-message"></p>
+            <div class="result-stats">
+              <span><strong id="correct-count">0</strong> зөв</span>
+              <span><strong id="wrong-count">0</strong> буруу</span>
+              <span><strong id="best-score">0</strong> шилдэг</span>
+            </div>
+          </div>
+
+          <button id="restart-button" class="button button-primary" type="button">
+            Шинэ 15 асуулт
+            <span aria-hidden="true">↻</span>
+          </button>
+        </div>
+
+        <div class="review-header">
+          <div>
+            <span class="result-kicker">Давтах хэсэг</span>
+            <h2>Буруу хариултын тайлбар</h2>
+          </div>
+          <span id="review-count" class="review-count"></span>
+        </div>
+
+        <div id="review-list" class="review-list"></div>
+      </section>
+    </main>
+
+    <div id="status-message" class="sr-only" aria-live="polite"></div>
+
+    <script src="quiz-data.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
