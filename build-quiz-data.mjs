@@ -19,7 +19,8 @@ const questionStartLines = [
   1054, 1063, 1073, 1083, 1092, 1097, 1106, 1116, 1125, 1130, 1139,
   1148, 1157, 1166, 1176, 1181, 1190, 1196, 1206, 1211, 1220, 1229,
   1234, 1244, 1249, 1258, 1267, 1273, 1282, 1291, 1300, 1309, 1319,
-  1326, 1327, 1337, 1342, 1352, 1362, 1367, 1376, 1381,
+  1326, 1327, 1337, 1342, 1352, 1362, 1367, 1376, 1381, 1390, 1399, 1409,
+  1419, 1424, 1433, 1442, 1452, 1457, 1466,
 ];
 
 const answerKeys = {
@@ -50,7 +51,9 @@ const answerKeys = {
   149: [1, 3], 150: [1], 151: [2], 152: [1], 153: [0], 154: [3],
   155: [3], 156: [0], 157: [1], 158: [1, 2, 3], 159: [0], 160: [0],
   161: [0, 1, 2, 3], 162: [0], 163: [2], 164: [0, 1], 165: [1],
-  166: [2], 167: [0], 168: [1],
+  166: [2], 167: [0], 168: [1], 169: [1], 170: [0, 2, 3],
+  171: [0, 3], 172: [1], 173: [2], 174: [1], 175: [0, 1, 2],
+  176: [0], 177: [3], 178: [0],
 };
 
 const customExplanations = {
@@ -104,6 +107,16 @@ const customExplanations = {
   163: "Room primary key-г зөвхөн autoGenerate = true гэж тохируулсан үед автоматаар өсгөнө; энэ нь default үйлдэл биш.",
   164: "DataStore-ийн хоёр implementation нь Preferences DataStore болон Proto DataStore юм. Room, SQLite нь relational database технологи.",
   165: "Preferences DataStore нь schema-гүй key-value хадгалалт. Урьдчилан тодорхойлсон schema хэрэглэдэг нь Proto DataStore.",
+  169: "Android Studio-ийн Background Task Inspector нь WorkManager worker-уудыг харах, төлөвийг хянах болон алдааг шинжлэх зориулалттай.",
+  170: "SUCCEEDED, FAILED, CANCELLED төлөвт орсон work цааш дахин ажиллахгүй тул terminal state гэж үзнэ. DELETED гэсэн WorkInfo.State байдаггүй.",
+  171: "WorkManager нэг удаагийн ажилд OneTimeWorkRequest, давтагдах ажилд PeriodicWorkRequest ашигладаг.",
+  172: "Хамааралтай ажлуудын гүйцэтгэх дарааллыг үүсгэхийг work chaining гэдэг; linking гэж нэрлэдэггүй.",
+  173: "WorkManager constraint нь network type зэрэг төхөөрөмжийн бодит нөхцөлийг шалгана. Том өгөгдөл татахын өмнө Wi-Fi шаардах нь тохиромжтой жишээ.",
+  174: "Worker-ийн input нь Data объект дахь хэмжээ хязгаартай key-value хосуудаар WorkRequest-д өгөгдөнө.",
+  175: "Enqueue хийсэн work-ийн WorkInfo төлөвийг id, tag эсвэл unique work-ийн name-аар WorkManager-аас ажиглаж болно.",
+  176: "Background Task Inspector-оос ажиллаж буй worker-ийг сонгон stop хийх боломжтой.",
+  177: "CoroutineWorker нь ListenableWorker-ийн дэд төрөл тул TestListenableWorkerBuilder ашиглан тестийн instance байгуулна.",
+  178: "Worker implementation-ийн unit test-д worker-ийг тестийн builder-ээр үүсгээд doWork()-ийг шууд дуудаж Result-ийг шалгаж болно.",
 };
 
 const topicFor = (id) => {
@@ -116,7 +129,8 @@ const topicFor = (id) => {
   if (id <= 102) return "Lifecycle ба архитектур";
   if (id <= 123) return "Navigation ба adaptive UI";
   if (id <= 143) return "Coroutine, network ба DI";
-  return "SQL, Room ба DataStore";
+  if (id <= 168) return "SQL, Room ба DataStore";
+  return "WorkManager ба background task";
 };
 
 const clean = (value) => value
@@ -173,8 +187,8 @@ const questions = questionStartLines.map((lineNumber, index) => {
   };
 });
 
-if (questions.length !== 168) {
-  throw new Error(`Expected 168 questions, found ${questions.length}`);
+if (questions.length !== 178) {
+  throw new Error(`Expected 178 questions, found ${questions.length}`);
 }
 
 const output = `// Generated from shalgalt.md by build-quiz-data.mjs.\nwindow.QUIZ_QUESTIONS = ${JSON.stringify(questions, null, 2)};\n`;

@@ -2647,5 +2647,164 @@ window.QUIZ_QUESTIONS = [
     ],
     "multiple": false,
     "explanation": "Зөв ойлголт нь “IOException”. Энэ нь sql, room ба datastore сэдэвт хэрэглэгддэг зөв нэр, дүрэм эсвэл үйлдэл юм."
+  },
+  {
+    "id": 169,
+    "topic": "WorkManager ба background task",
+    "prompt": "Which tool helps you visualize, monitor, and debug your app's workers?",
+    "options": [
+      "Profiler",
+      "Background Task Inspector",
+      "Logcat",
+      "Device Manager"
+    ],
+    "answers": [
+      1
+    ],
+    "multiple": false,
+    "explanation": "Android Studio-ийн Background Task Inspector нь WorkManager worker-уудыг харах, төлөвийг хянах болон алдааг шинжлэх зориулалттай."
+  },
+  {
+    "id": 170,
+    "topic": "WorkManager ба background task",
+    "prompt": "Which of the following options are valid terminal work states?",
+    "options": [
+      "CANCELLED",
+      "DELETED",
+      "FAILED",
+      "SUCCEEDED"
+    ],
+    "answers": [
+      0,
+      2,
+      3
+    ],
+    "multiple": true,
+    "explanation": "SUCCEEDED, FAILED, CANCELLED төлөвт орсон work цааш дахин ажиллахгүй тул terminal state гэж үзнэ. DELETED гэсэн WorkInfo.State байдаггүй."
+  },
+  {
+    "id": 171,
+    "topic": "WorkManager ба background task",
+    "prompt": "Which of the following options are valid types of work requests?",
+    "options": [
+      "OneTimeWorkRequest",
+      "SingleWorkRequest",
+      "RepeatingWorkRequest",
+      "PeriodicWorkRequest"
+    ],
+    "answers": [
+      0,
+      3
+    ],
+    "multiple": true,
+    "explanation": "WorkManager нэг удаагийн ажилд OneTimeWorkRequest, давтагдах ажилд PeriodicWorkRequest ашигладаг."
+  },
+  {
+    "id": 172,
+    "topic": "WorkManager ба background task",
+    "prompt": "Creating and enqueueing multiple dependent tasks and the order they should run in is called linking.",
+    "options": [
+      "True",
+      "False"
+    ],
+    "answers": [
+      1
+    ],
+    "multiple": false,
+    "explanation": "Хамааралтай ажлуудын гүйцэтгэх дарааллыг үүсгэхийг work chaining гэдэг; linking гэж нэрлэдэггүй."
+  },
+  {
+    "id": 173,
+    "topic": "WorkManager ба background task",
+    "prompt": "Work constraints are useful in which of the following situations?",
+    "options": [
+      "Checking that a valid form of payment is saved on the user's device before the work runs.",
+      "Checking what time it is before the work runs.",
+      "Checking that the device is connected to a wifi network before downloading a large amount of app data.",
+      "Checking that the app was opened a set number of times before the work runs."
+    ],
+    "answers": [
+      2
+    ],
+    "multiple": false,
+    "explanation": "WorkManager constraint нь network type зэрэг төхөөрөмжийн бодит нөхцөлийг шалгана. Том өгөгдөл татахын өмнө Wi-Fi шаардах нь тохиромжтой жишээ."
+  },
+  {
+    "id": 174,
+    "topic": "WorkManager ба background task",
+    "prompt": "Which of the following options is a way to pass input data to a worker?",
+    "options": [
+      "Pass the data in as an argument when calling the doWork() function.",
+      "Use a Data object to pass key/value pairs.",
+      "Pass data as a String, but it must be less than 140 characters.",
+      "Assign it to the worker.inputData variable."
+    ],
+    "answers": [
+      1
+    ],
+    "multiple": false,
+    "explanation": "Worker-ийн input нь Data объект дахь хэмжээ хязгаартай key-value хосуудаар WorkRequest-д өгөгдөнө."
+  },
+  {
+    "id": 175,
+    "topic": "WorkManager ба background task",
+    "prompt": "After work is enqueued, you can check its status by ___.",
+    "options": [
+      "Name",
+      "Id",
+      "Tag",
+      "Work type"
+    ],
+    "answers": [
+      0,
+      1,
+      2
+    ],
+    "multiple": true,
+    "explanation": "Enqueue хийсэн work-ийн WorkInfo төлөвийг id, tag эсвэл unique work-ийн name-аар WorkManager-аас ажиглаж болно."
+  },
+  {
+    "id": 176,
+    "topic": "WorkManager ба background task",
+    "prompt": "The Background Task Inspector lets you stop workers during their execution.",
+    "options": [
+      "True",
+      "False"
+    ],
+    "answers": [
+      0
+    ],
+    "multiple": false,
+    "explanation": "Background Task Inspector-оос ажиллаж буй worker-ийг сонгон stop хийх боломжтой."
+  },
+  {
+    "id": 177,
+    "topic": "WorkManager ба background task",
+    "prompt": "Which worker builder is recommended to test CoroutineWorkers?",
+    "options": [
+      "OneTimeWorkRequestBuilder",
+      "PeriodicWorkRequestBuilder",
+      "TestWorkerBuilder",
+      "TestListenableWorkerBuilder"
+    ],
+    "answers": [
+      3
+    ],
+    "multiple": false,
+    "explanation": "CoroutineWorker нь ListenableWorker-ийн дэд төрөл тул TestListenableWorkerBuilder ашиглан тестийн instance байгуулна."
+  },
+  {
+    "id": 178,
+    "topic": "WorkManager ба background task",
+    "prompt": "When testing worker implementations, you can call workers directly with doWork() instead of enqueuing the worker.",
+    "options": [
+      "True",
+      "False"
+    ],
+    "answers": [
+      0
+    ],
+    "multiple": false,
+    "explanation": "Worker implementation-ийн unit test-д worker-ийг тестийн builder-ээр үүсгээд doWork()-ийг шууд дуудаж Result-ийг шалгаж болно."
   }
 ];
