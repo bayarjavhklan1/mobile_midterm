@@ -472,6 +472,57 @@ button {
   padding-top: 38px;
 }
 
+.quiz-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.quiz-toolbar > span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.language-switch {
+  display: inline-grid;
+  grid-template-columns: repeat(2, minmax(78px, 1fr));
+  gap: 3px;
+  padding: 3px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: #e9ebef;
+}
+
+.language-button {
+  min-height: 32px;
+  padding: 0 11px;
+  border: 0;
+  border-radius: 5px;
+  color: var(--muted);
+  background: transparent;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.language-button:hover {
+  color: var(--ink);
+}
+
+.language-button.is-active {
+  color: var(--primary-dark);
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(23, 25, 31, 0.12);
+}
+
+.result-toolbar {
+  margin-top: 38px;
+}
+
 .progress-panel {
   margin-bottom: 16px;
 }
@@ -670,6 +721,7 @@ button {
 .button:focus-visible,
 .view-tab:focus-visible,
 .unit-nav-button:focus-visible,
+.language-button:focus-visible,
 .option:has(input:focus-visible),
 .progress-step:focus-visible {
   outline: 3px solid rgba(49, 87, 213, 0.3);
@@ -922,6 +974,10 @@ button {
     margin-top: 14px;
   }
 
+  .quiz-toolbar {
+    justify-content: space-between;
+  }
+
   .theory-intro {
     grid-template-columns: 1fr;
     gap: 20px;
@@ -1036,6 +1092,14 @@ button {
 
   .view-tab {
     font-size: 13px;
+  }
+
+  .quiz-toolbar > span {
+    font-size: 11px;
+  }
+
+  .language-switch {
+    grid-template-columns: repeat(2, minmax(66px, 1fr));
   }
 
   .theory-intro h1 {

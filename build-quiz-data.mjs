@@ -161,6 +161,14 @@ const questions = questionStartLines.map((lineNumber, index) => {
     prompt = `${prompt}\n\n${segment.shift()}`;
   }
 
+  if (id === 125) {
+    prompt = "The ___ thread is responsible for displaying the user interface and responding to user input.";
+  }
+
+  if (id === 160) {
+    prompt = "To handle conflicts when inserting into a database, you can pass a(n) ___ parameter, such as IGNORE, to the @Insert annotation.";
+  }
+
   if (id === 15) segment.push("open");
   if (id === 125) segment.splice(0, segment.length, "Main", "Worker", "IO", "Default");
   if (id === 160) segment.splice(0, segment.length, "onConflict", "strategy", "conflictAction", "resolution");

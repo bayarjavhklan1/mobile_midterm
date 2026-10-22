@@ -1955,7 +1955,7 @@ window.QUIZ_QUESTIONS = [
   {
     "id": 125,
     "topic": "Coroutine, network ба DI",
-    "prompt": "The thread is responsible for displaying the user interface responding to user input.",
+    "prompt": "The ___ thread is responsible for displaying the user interface and responding to user input.",
     "options": [
       "Main",
       "Worker",
@@ -2509,7 +2509,7 @@ window.QUIZ_QUESTIONS = [
   {
     "id": 160,
     "topic": "SQL, Room ба DataStore",
-    "prompt": "To handle conflicts when inserting into a database, you can pass a(n) parameter, such as IGNORE, to the @Insert annotation.",
+    "prompt": "To handle conflicts when inserting into a database, you can pass a(n) ___ parameter, such as IGNORE, to the @Insert annotation.",
     "options": [
       "onConflict",
       "strategy",

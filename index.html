@@ -92,6 +92,18 @@
       </section>
 
       <section id="quiz-screen" class="quiz-screen" aria-labelledby="question-title" hidden>
+        <div class="quiz-toolbar">
+          <span>Асуултын хэл</span>
+          <div class="language-switch" role="group" aria-label="Асуултын хэл сонгох">
+            <button class="language-button is-active" type="button" data-quiz-language="mn" aria-pressed="true">
+              Монгол
+            </button>
+            <button class="language-button" type="button" data-quiz-language="en" aria-pressed="false">
+              English
+            </button>
+          </div>
+        </div>
+
         <div class="progress-panel">
           <div class="progress-copy">
             <span id="progress-label">Асуулт 1 / 15</span>
@@ -130,6 +142,18 @@
       </section>
 
       <section id="result-screen" class="result-screen" aria-labelledby="result-title" hidden>
+        <div class="quiz-toolbar result-toolbar">
+          <span>Хариултын хэл</span>
+          <div class="language-switch" role="group" aria-label="Хариултын хэл сонгох">
+            <button class="language-button is-active" type="button" data-quiz-language="mn" aria-pressed="true">
+              Монгол
+            </button>
+            <button class="language-button" type="button" data-quiz-language="en" aria-pressed="false">
+              English
+            </button>
+          </div>
+        </div>
+
         <div class="result-summary">
           <div id="score-ring" class="score-ring" aria-label="Шалгалтын оноо">
             <strong id="score-percent">0%</strong>
@@ -169,6 +193,7 @@
 
     <script src="theory-data.js"></script>
     <script src="quiz-data.js"></script>
+    <script src="quiz-translations.js"></script>
     <script src="app.js"></script>
   </body>
 </html>

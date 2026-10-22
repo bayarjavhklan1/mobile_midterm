@@ -5,6 +5,7 @@
 
   const QUIZ_LENGTH = 15;
   const questions = window.QUIZ_QUESTIONS ?? [];
+  const translations = window.QUIZ_TRANSLATIONS_MN ?? {};
   const theoryUnits = window.THEORY_UNITS ?? [];
 
   const elements = {
@@ -14,6 +15,7 @@
     theoryScreen: document.querySelector("#theory-screen"),
     quizScreen: document.querySelector("#quiz-screen"),
     resultScreen: document.querySelector("#result-screen"),
+    languageButtons: document.querySelectorAll("[data-quiz-language]"),
     theoryProgressCount: document.querySelector("#theory-progress-count"),
     theoryProgressFill: document.querySelector("#theory-progress-fill"),
     unitNav: document.querySelector("#unit-nav"),
@@ -55,6 +57,7 @@
   let responses = new Map();
   let activeUnitIndex = 0;
   let showingResults = false;
+  let quizLanguage = localStorage.getItem("quizLanguage") === "en" ? "en" : "mn";
 
   const loadCompletedUnits = () => {
     try {
@@ -89,6 +92,22 @@
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
+
+  const localizeQuestion = (question) => {
+    if (quizLanguage === "en") return question;
+    const translation = translations[question.id];
+    return translation
+      ? { ...question, prompt: translation.prompt, options: translation.options }
+      : question;
+  };
+
+  const syncLanguageControls = () => {
+    elements.languageButtons.forEach((button) => {
+      const isActive = button.dataset.quizLanguage === quizLanguage;
+      button.classList.toggle("is-active", isActive);
+      button.setAttribute("aria-pressed", String(isActive));
+    });
+  };
 
   const scrollToContent = () => {
     const top = document.querySelector(".view-tabs").offsetTop - 12;
@@ -211,15 +230,25 @@
 
   function renderQuestion() {
     const question = quiz[currentIndex];
+    const displayQuestion = localizeQuestion(question);
     const selected = responses.get(question.id) ?? [];
     const answeredCount = responses.size;
 
-    elements.progressLabel.textContent = `Асуулт ${currentIndex + 1} / ${quiz.length}`;
-    elements.answeredLabel.textContent = `${answeredCount} хариулсан`;
+    elements.progressLabel.textContent = quizLanguage === "mn"
+      ? `Асуулт ${currentIndex + 1} / ${quiz.length}`
+      : `Question ${currentIndex + 1} / ${quiz.length}`;
+    elements.answeredLabel.textContent = quizLanguage === "mn"
+      ? `${answeredCount} хариулсан`
+      : `${answeredCount} answered`;
     elements.progressFill.style.width = `${((currentIndex + 1) / quiz.length) * 100}%`;
     elements.topicLabel.textContent = question.topic;
-    elements.questionType.textContent = question.multiple ? "Олон хариулт" : "Нэг хариулт";
-    elements.questionTitle.textContent = question.prompt;
+    elements.questionType.textContent = quizLanguage === "mn"
+      ? (question.multiple ? "Олон хариулт" : "Нэг хариулт")
+      : (question.multiple ? "Multiple answers" : "Single answer");
+    elements.questionTitle.textContent = displayQuestion.prompt;
+    elements.selectionHint.textContent = quizLanguage === "mn"
+      ? "Нэгээс олон зөв хариулттай."
+      : "Choose all correct answers.";
     elements.selectionHint.hidden = !question.multiple;
     elements.previousButton.disabled = currentIndex === 0;
     elements.nextButton.disabled = selected.length === 0;
@@ -227,7 +256,7 @@
       ? 'Дуусгах <span aria-hidden="true">✓</span>'
       : 'Дараах <span aria-hidden="true">→</span>';
 
-    elements.optionsForm.innerHTML = question.options.map((option, optionIndex) => {
+    elements.optionsForm.innerHTML = displayQuestion.options.map((option, optionIndex) => {
       const isSelected = selected.includes(optionIndex);
       const inputType = question.multiple ? "checkbox" : "radio";
       return `
@@ -315,7 +344,7 @@
     return "Давтах сэдвүүд тодорхой боллоо. Тайлбарыг уншаад шинэ 15 асуултаар дахин оролдоорой.";
   };
 
-  const showResults = () => {
+  const showResults = ({ scroll = true } = {}) => {
     const results = quiz.map((question) => {
       const selected = responses.get(question.id) ?? [];
       return { question, selected, correct: arraysMatch(selected, question.answers) };
@@ -350,12 +379,13 @@
       `;
     } else {
       elements.reviewList.innerHTML = wrong.map(({ question, selected }, index) => {
-        const selectedText = selected.map((answer) => question.options[answer]).join(", ");
-        const correctText = question.answers.map((answer) => question.options[answer]).join(", ");
+        const displayQuestion = localizeQuestion(question);
+        const selectedText = selected.map((answer) => displayQuestion.options[answer]).join(", ");
+        const correctText = question.answers.map((answer) => displayQuestion.options[answer]).join(", ");
         return `
           <article class="review-item">
             <span class="review-topic">${index + 1}. ${escapeHtml(question.topic)}</span>
-            <h3 class="review-question">${escapeHtml(question.prompt)}</h3>
+            <h3 class="review-question">${escapeHtml(displayQuestion.prompt)}</h3>
             <div class="answer-row">
               <span class="answer-label">Таны хариу</span>
               <span class="answer-value is-wrong">${escapeHtml(selectedText || "Хариулаагүй")}</span>
@@ -370,12 +400,23 @@
       }).join("");
     }
 
-    scrollToContent();
+    if (scroll) scrollToContent();
     elements.statusMessage.textContent = `Шалгалт дууслаа. ${quiz.length}-аас ${correct} зөв.`;
   };
 
   elements.theoryTab.addEventListener("click", () => showView("theory"));
   elements.quizTab.addEventListener("click", () => showView("quiz"));
+
+  elements.languageButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      quizLanguage = button.dataset.quizLanguage;
+      localStorage.setItem("quizLanguage", quizLanguage);
+      syncLanguageControls();
+
+      if (showingResults) showResults({ scroll: false });
+      else renderQuestion();
+    });
+  });
 
   elements.previousUnit.addEventListener("click", () => {
     if (activeUnitIndex === 0) return;
@@ -427,12 +468,17 @@
     }
   });
 
-  if (questions.length < QUIZ_LENGTH || theoryUnits.length !== 7) {
+  if (
+    questions.length < QUIZ_LENGTH
+    || theoryUnits.length !== 7
+    || Object.keys(translations).length !== questions.length
+  ) {
     document.body.innerHTML = "<p>Онол эсвэл асуултын өгөгдөл дутуу байна. Өгөгдлийн файлуудаа шалгана уу.</p>";
     return;
   }
 
   elements.bankCount.textContent = questions.length;
+  syncLanguageControls();
   renderTheoryUnit();
   resetQuiz();
   showView("theory", { scroll: false });
