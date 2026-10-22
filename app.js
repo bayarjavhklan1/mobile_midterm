@@ -16,6 +16,7 @@
     quizScreen: document.querySelector("#quiz-screen"),
     resultScreen: document.querySelector("#result-screen"),
     languageButtons: document.querySelectorAll("[data-quiz-language]"),
+    modeButtons: document.querySelectorAll("[data-quiz-mode]"),
     theoryProgressCount: document.querySelector("#theory-progress-count"),
     theoryProgressFill: document.querySelector("#theory-progress-fill"),
     unitNav: document.querySelector("#unit-nav"),
@@ -37,7 +38,12 @@
     questionTitle: document.querySelector("#question-title"),
     selectionHint: document.querySelector("#selection-hint"),
     optionsForm: document.querySelector("#options-form"),
+    answerFeedback: document.querySelector("#answer-feedback"),
+    feedbackStatus: document.querySelector("#feedback-status"),
+    feedbackAnswer: document.querySelector("#feedback-answer"),
+    feedbackExplanation: document.querySelector("#feedback-explanation"),
     previousButton: document.querySelector("#previous-button"),
+    checkButton: document.querySelector("#check-button"),
     nextButton: document.querySelector("#next-button"),
     restartButton: document.querySelector("#restart-button"),
     scoreRing: document.querySelector("#score-ring"),
@@ -58,6 +64,8 @@
   let activeUnitIndex = 0;
   let showingResults = false;
   let quizLanguage = localStorage.getItem("quizLanguage") === "en" ? "en" : "mn";
+  let quizMode = localStorage.getItem("quizMode") === "exam" ? "exam" : "practice";
+  let checkedAnswers = new Set();
 
   const loadCompletedUnits = () => {
     try {
@@ -108,6 +116,16 @@
       button.setAttribute("aria-pressed", String(isActive));
     });
   };
+
+  const syncModeControls = () => {
+    elements.modeButtons.forEach((button) => {
+      const isActive = button.dataset.quizMode === quizMode;
+      button.classList.toggle("is-active", isActive);
+      button.setAttribute("aria-pressed", String(isActive));
+    });
+  };
+
+  const isPracticeMode = () => quizMode === "practice";
 
   const scrollToContent = () => {
     const top = document.querySelector(".view-tabs").offsetTop - 12;
@@ -233,6 +251,7 @@
     const displayQuestion = localizeQuestion(question);
     const selected = responses.get(question.id) ?? [];
     const answeredCount = responses.size;
+    const isChecked = checkedAnswers.has(question.id);
 
     elements.progressLabel.textContent = quizLanguage === "mn"
       ? `Асуулт ${currentIndex + 1} / ${quiz.length}`
@@ -247,21 +266,29 @@
       : (question.multiple ? "Multiple answers" : "Single answer");
     elements.questionTitle.textContent = displayQuestion.prompt;
     elements.selectionHint.textContent = quizLanguage === "mn"
-      ? "Нэгээс олон зөв хариулттай."
-      : "Choose all correct answers.";
+      ? (isPracticeMode() ? "Зөв гэж үзсэн бүх хариултаа сонгоод шалгана уу." : "Нэгээс олон зөв хариулттай.")
+      : (isPracticeMode() ? "Select every correct answer, then check it." : "Choose all correct answers.");
     elements.selectionHint.hidden = !question.multiple;
     elements.previousButton.disabled = currentIndex === 0;
-    elements.nextButton.disabled = selected.length === 0;
+    elements.checkButton.hidden = !isPracticeMode() || !question.multiple || isChecked;
+    elements.checkButton.disabled = selected.length === 0;
+    elements.nextButton.disabled = isPracticeMode() ? !isChecked : selected.length === 0;
     elements.nextButton.innerHTML = currentIndex === quiz.length - 1
-      ? 'Дуусгах <span aria-hidden="true">✓</span>'
-      : 'Дараах <span aria-hidden="true">→</span>';
+      ? `${quizLanguage === "mn" ? "Үр дүн харах" : "View result"} <span aria-hidden="true">✓</span>`
+      : `${quizLanguage === "mn" ? "Дараах" : "Next"} <span aria-hidden="true">→</span>`;
 
     elements.optionsForm.innerHTML = displayQuestion.options.map((option, optionIndex) => {
       const isSelected = selected.includes(optionIndex);
+      const isCorrectOption = question.answers.includes(optionIndex);
       const inputType = question.multiple ? "checkbox" : "radio";
+      const classes = ["option"];
+      if (isSelected) classes.push("is-selected");
+      if (isPracticeMode() && isChecked && isCorrectOption) classes.push("is-correct");
+      if (isPracticeMode() && isChecked && isSelected && !isCorrectOption) classes.push("is-wrong");
+      if (isChecked) classes.push("is-locked");
       return `
-        <label class="option${isSelected ? " is-selected" : ""}">
-          <input type="${inputType}" name="answer" value="${optionIndex}" ${isSelected ? "checked" : ""} />
+        <label class="${classes.join(" ")}">
+          <input type="${inputType}" name="answer" value="${optionIndex}" ${isSelected ? "checked" : ""} ${isChecked ? "disabled" : ""} />
           <span class="option-key">${optionIndex + 1}</span>
           <span class="option-text">${escapeHtml(option)}</span>
         </label>
@@ -272,15 +299,39 @@
       input.addEventListener("change", handleAnswerChange);
     });
 
+    renderAnswerFeedback(question, displayQuestion, selected, isChecked);
     renderProgressSteps();
     elements.statusMessage.textContent = `${currentIndex + 1}-р асуулт. ${question.topic}.`;
   }
 
+  const renderAnswerFeedback = (question, displayQuestion, selected, isChecked) => {
+    const shouldShow = isPracticeMode() && isChecked;
+    elements.answerFeedback.hidden = !shouldShow;
+    if (!shouldShow) return;
+
+    const isCorrect = arraysMatch(selected, question.answers);
+    const correctText = question.answers
+      .map((answer) => displayQuestion.options[answer])
+      .join(", ");
+
+    elements.answerFeedback.classList.toggle("is-correct", isCorrect);
+    elements.answerFeedback.classList.toggle("is-wrong", !isCorrect);
+    elements.feedbackStatus.textContent = isCorrect
+      ? (quizLanguage === "mn" ? "Зөв хариуллаа" : "Correct")
+      : (quizLanguage === "mn" ? "Буруу хариуллаа" : "Incorrect");
+    elements.feedbackAnswer.textContent = `${quizLanguage === "mn" ? "Зөв хариу" : "Correct answer"}: ${correctText}`;
+    elements.feedbackExplanation.textContent = `Тайлбар: ${question.explanation}`;
+  };
+
   const resetQuiz = () => {
-    quiz = shuffle(questions).slice(0, Math.min(QUIZ_LENGTH, questions.length));
+    quiz = isPracticeMode()
+      ? [...questions]
+      : shuffle(questions).slice(0, Math.min(QUIZ_LENGTH, questions.length));
     currentIndex = 0;
     responses = new Map();
+    checkedAnswers = new Set();
     showingResults = false;
+    syncModeControls();
     renderQuestion();
   };
 
@@ -290,6 +341,12 @@
   };
 
   const renderProgressSteps = () => {
+    elements.progressSteps.hidden = isPracticeMode();
+    if (isPracticeMode()) {
+      elements.progressSteps.innerHTML = "";
+      return;
+    }
+
     elements.progressSteps.innerHTML = quiz.map((question, index) => {
       const classes = ["progress-step"];
       if (responses.has(question.id)) classes.push("is-answered");
@@ -313,12 +370,24 @@
     if (selected.length > 0) responses.set(question.id, selected);
     else responses.delete(question.id);
 
+    if (isPracticeMode() && !question.multiple && selected.length > 0) {
+      checkedAnswers.add(question.id);
+    }
+
+    renderQuestion();
+  };
+
+  const checkCurrentAnswer = () => {
+    const question = quiz[currentIndex];
+    if (!responses.has(question.id)) return;
+    checkedAnswers.add(question.id);
     renderQuestion();
   };
 
   const moveNext = () => {
     const question = quiz[currentIndex];
     if (!responses.has(question.id)) return;
+    if (isPracticeMode() && !checkedAnswers.has(question.id)) return;
 
     if (currentIndex < quiz.length - 1) {
       currentIndex += 1;
@@ -341,7 +410,7 @@
     if (percent === 100) return "Бүх асуултад зөв хариуллаа. Маш сайн бэлтгэгдсэн байна.";
     if (percent >= 80) return "Сайн үр дүн. Доорх цөөн сэдвийг давтаад улам бататгаарай.";
     if (percent >= 60) return "Суурь ойлголт сайн байна. Буруу хариултын тайлбарыг нэг удаа нягтлаарай.";
-    return "Давтах сэдвүүд тодорхой боллоо. Тайлбарыг уншаад шинэ 15 асуултаар дахин оролдоорой.";
+    return "Давтах сэдвүүд тодорхой боллоо. Тайлбарыг уншаад дахин оролдоорой.";
   };
 
   const showResults = ({ scroll = true } = {}) => {
@@ -352,10 +421,11 @@
     const correct = results.filter((result) => result.correct).length;
     const wrong = results.filter((result) => !result.correct);
     const percent = Math.round((correct / quiz.length) * 100);
-    const previousBest = Number(localStorage.getItem("kotlinQuizBest") ?? 0);
+    const bestScoreKey = isPracticeMode() ? "kotlinQuizBestPractice" : "kotlinQuizBestExam";
+    const previousBest = Number(localStorage.getItem(bestScoreKey) ?? 0);
     const best = Math.max(previousBest, correct);
 
-    localStorage.setItem("kotlinQuizBest", String(best));
+    localStorage.setItem(bestScoreKey, String(best));
     showingResults = true;
     setActiveTab("quiz");
     elements.theoryScreen.hidden = true;
@@ -368,12 +438,15 @@
     elements.correctCount.textContent = correct;
     elements.wrongCount.textContent = wrong.length;
     elements.bestScore.textContent = `${best}/${quiz.length}`;
+    elements.restartButton.innerHTML = isPracticeMode()
+      ? '178 асуултыг дахин эхлэх <span aria-hidden="true">↻</span>'
+      : 'Шинэ 15 асуулт <span aria-hidden="true">↻</span>';
     elements.reviewCount.textContent = wrong.length === 0 ? "Алдаа байхгүй" : `${wrong.length} тайлбар`;
 
     if (wrong.length === 0) {
       elements.reviewList.innerHTML = `
         <div class="perfect-result">
-          <h3>15-аас 15</h3>
+          <h3>${quiz.length}-аас ${quiz.length}</h3>
           <p>Энэ удаагийн бүх асуултад зөв хариулсан тул давтах алдаа алга.</p>
         </div>
       `;
@@ -418,6 +491,17 @@
     });
   });
 
+  elements.modeButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      const nextMode = button.dataset.quizMode;
+      if (nextMode === quizMode) return;
+      quizMode = nextMode;
+      localStorage.setItem("quizMode", quizMode);
+      resetQuiz();
+      showView("quiz", { scroll: false });
+    });
+  });
+
   elements.previousUnit.addEventListener("click", () => {
     if (activeUnitIndex === 0) return;
     activeUnitIndex -= 1;
@@ -448,6 +532,7 @@
   });
 
   elements.nextButton.addEventListener("click", moveNext);
+  elements.checkButton.addEventListener("click", checkCurrentAnswer);
   elements.restartButton.addEventListener("click", startQuiz);
 
   document.addEventListener("keydown", (event) => {
@@ -462,8 +547,9 @@
       }
     }
 
-    if (event.key === "Enter" && !elements.nextButton.disabled) {
-      moveNext();
+    if (event.key === "Enter") {
+      if (!elements.checkButton.hidden && !elements.checkButton.disabled) checkCurrentAnswer();
+      else if (!elements.nextButton.disabled) moveNext();
       event.preventDefault();
     }
   });
@@ -479,6 +565,7 @@
 
   elements.bankCount.textContent = questions.length;
   syncLanguageControls();
+  syncModeControls();
   renderTheoryUnit();
   resetQuiz();
   showView("theory", { scroll: false });

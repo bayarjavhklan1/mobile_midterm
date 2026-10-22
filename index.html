@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Android Basics with Compose Unit 1–7 онол болон 15 асуулттай санамсаргүй тест" />
+    <meta name="description" content="Android Basics with Compose Unit 1–7 онол болон 178 асуулттай дадлага тест" />
     <title>Kotlin & Android бэлтгэл</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
@@ -41,8 +41,8 @@
             <span class="theory-kicker">Android Basics with Compose</span>
             <h1 id="theory-title">Unit 1–7 онолын сан</h1>
             <p>
-              Эхлээд үндсэн ойлголтуудаа дарааллаар нь уншаад, дараа нь санамсаргүй
-              15 асуултаар мэдлэгээ шалгаарай.
+              Эхлээд үндсэн ойлголтуудаа дарааллаар нь уншаад, дараа нь бүх 178
+              асуултыг нэг нэгээр нь ажиллан мэдлэгээ бататгаарай.
             </p>
           </div>
 
@@ -93,20 +93,34 @@
 
       <section id="quiz-screen" class="quiz-screen" aria-labelledby="question-title" hidden>
         <div class="quiz-toolbar">
-          <span>Асуултын хэл</span>
-          <div class="language-switch" role="group" aria-label="Асуултын хэл сонгох">
-            <button class="language-button is-active" type="button" data-quiz-language="mn" aria-pressed="true">
-              Монгол
-            </button>
-            <button class="language-button" type="button" data-quiz-language="en" aria-pressed="false">
-              English
-            </button>
+          <div class="quiz-toolbar-group">
+            <span>Горим</span>
+            <div class="mode-switch" role="group" aria-label="Тестийн горим сонгох">
+              <button class="mode-button is-active" type="button" data-quiz-mode="practice" aria-pressed="true">
+                Бүх 178
+              </button>
+              <button class="mode-button" type="button" data-quiz-mode="exam" aria-pressed="false">
+                Санамсаргүй 15
+              </button>
+            </div>
+          </div>
+
+          <div class="quiz-toolbar-group">
+            <span>Асуултын хэл</span>
+            <div class="language-switch" role="group" aria-label="Асуултын хэл сонгох">
+              <button class="language-button is-active" type="button" data-quiz-language="mn" aria-pressed="true">
+                Монгол
+              </button>
+              <button class="language-button" type="button" data-quiz-language="en" aria-pressed="false">
+                English
+              </button>
+            </div>
           </div>
         </div>
 
         <div class="progress-panel">
           <div class="progress-copy">
-            <span id="progress-label">Асуулт 1 / 15</span>
+            <span id="progress-label">Асуулт 1 / 178</span>
             <span id="answered-label">0 хариулсан</span>
           </div>
           <div class="progress-track" aria-hidden="true">
@@ -128,15 +142,27 @@
 
           <form id="options-form" class="options-list" aria-describedby="selection-hint"></form>
 
+          <div id="answer-feedback" class="answer-feedback" role="status" hidden>
+            <strong id="feedback-status" class="feedback-status"></strong>
+            <p id="feedback-answer"></p>
+            <p id="feedback-explanation"></p>
+          </div>
+
           <div class="question-actions">
             <button id="previous-button" class="button button-secondary" type="button">
               <span aria-hidden="true">←</span>
               Өмнөх
             </button>
-            <button id="next-button" class="button button-primary" type="button" disabled>
-              Дараах
-              <span aria-hidden="true">→</span>
-            </button>
+            <div class="question-actions-right">
+              <button id="check-button" class="button button-secondary" type="button" hidden disabled>
+                Хариу шалгах
+                <span aria-hidden="true">✓</span>
+              </button>
+              <button id="next-button" class="button button-primary" type="button" disabled>
+                Дараах
+                <span aria-hidden="true">→</span>
+              </button>
+            </div>
           </div>
         </article>
       </section>
@@ -157,7 +183,7 @@
         <div class="result-summary">
           <div id="score-ring" class="score-ring" aria-label="Шалгалтын оноо">
             <strong id="score-percent">0%</strong>
-            <span id="score-fraction">0 / 15</span>
+            <span id="score-fraction">0 / 178</span>
           </div>
 
           <div class="result-copy">
