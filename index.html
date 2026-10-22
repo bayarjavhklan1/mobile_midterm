@@ -3,18 +3,18 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Kotlin болон Android хичээлийн 15 асуулттай санамсаргүй тест" />
-    <title>Kotlin Quiz</title>
+    <meta name="description" content="Android Basics with Compose Unit 1–7 онол болон 15 асуулттай санамсаргүй тест" />
+    <title>Kotlin & Android бэлтгэл</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
     <main class="app-shell">
       <header class="app-bar">
-        <a class="brand" href="index.html" aria-label="Kotlin Quiz эхлэл">
+        <a class="brand" href="index.html" aria-label="Kotlin болон Android бэлтгэлийн эхлэл">
           <span class="brand-mark" aria-hidden="true">K</span>
           <span>
-            <strong>Kotlin Quiz</strong>
-            <small>Android шалгалтын бэлтгэл</small>
+            <strong>Kotlin & Android</strong>
+            <small>Онол унших, шалгалтад бэлтгэх</small>
           </span>
         </a>
 
@@ -24,7 +24,74 @@
         </div>
       </header>
 
-      <section id="quiz-screen" class="quiz-screen" aria-labelledby="question-title">
+      <nav class="view-tabs" aria-label="Үндсэн хэсэг">
+        <button id="theory-tab" class="view-tab is-active" type="button" aria-selected="true">
+          <span class="view-tab-icon" aria-hidden="true">01</span>
+          Онол унших
+        </button>
+        <button id="quiz-tab" class="view-tab" type="button" aria-selected="false">
+          <span class="view-tab-icon" aria-hidden="true">02</span>
+          Тест өгөх
+        </button>
+      </nav>
+
+      <section id="theory-screen" class="theory-screen" aria-labelledby="theory-title">
+        <div class="theory-intro">
+          <div>
+            <span class="theory-kicker">Android Basics with Compose</span>
+            <h1 id="theory-title">Unit 1–7 онолын сан</h1>
+            <p>
+              Эхлээд үндсэн ойлголтуудаа дарааллаар нь уншаад, дараа нь санамсаргүй
+              15 асуултаар мэдлэгээ шалгаарай.
+            </p>
+          </div>
+
+          <div class="reading-progress" aria-label="Уншсан unit-ийн явц">
+            <div>
+              <strong id="theory-progress-count">0 / 7</strong>
+              <span>unit уншсан</span>
+            </div>
+            <div class="reading-progress-track" aria-hidden="true">
+              <div id="theory-progress-fill" class="reading-progress-fill"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="theory-layout">
+          <aside class="unit-sidebar" aria-label="Unit сонгох">
+            <span class="sidebar-label">Хичээлийн дараалал</span>
+            <div id="unit-nav" class="unit-nav"></div>
+          </aside>
+
+          <article class="theory-article">
+            <header class="unit-header">
+              <span id="unit-number" class="unit-number">Unit 1</span>
+              <h2 id="unit-title"></h2>
+              <p id="unit-subtitle" class="unit-subtitle"></p>
+              <p id="unit-description" class="unit-description"></p>
+              <div id="unit-pathways" class="unit-pathways" aria-label="Pathway сэдвүүд"></div>
+              <a id="unit-source" class="unit-source" href="#" target="_blank" rel="noreferrer">
+                Android Developers дээр нээх <span aria-hidden="true">↗</span>
+              </a>
+            </header>
+
+            <div id="unit-sections" class="unit-sections"></div>
+
+            <footer class="unit-actions">
+              <button id="previous-unit" class="button button-secondary" type="button">
+                <span aria-hidden="true">←</span>
+                Өмнөх unit
+              </button>
+              <button id="complete-unit" class="button button-primary" type="button">
+                Уншиж дууссан
+                <span aria-hidden="true">→</span>
+              </button>
+            </footer>
+          </article>
+        </div>
+      </section>
+
+      <section id="quiz-screen" class="quiz-screen" aria-labelledby="question-title" hidden>
         <div class="progress-panel">
           <div class="progress-copy">
             <span id="progress-label">Асуулт 1 / 15</span>
@@ -100,6 +167,7 @@
 
     <div id="status-message" class="sr-only" aria-live="polite"></div>
 
+    <script src="theory-data.js"></script>
     <script src="quiz-data.js"></script>
     <script src="app.js"></script>
   </body>

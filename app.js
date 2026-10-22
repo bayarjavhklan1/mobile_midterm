@@ -1,13 +1,31 @@
 (() => {
   "use strict";
 
+  if ("scrollRestoration" in history) history.scrollRestoration = "manual";
+
   const QUIZ_LENGTH = 15;
   const questions = window.QUIZ_QUESTIONS ?? [];
+  const theoryUnits = window.THEORY_UNITS ?? [];
 
   const elements = {
     bankCount: document.querySelector("#bank-count"),
+    theoryTab: document.querySelector("#theory-tab"),
+    quizTab: document.querySelector("#quiz-tab"),
+    theoryScreen: document.querySelector("#theory-screen"),
     quizScreen: document.querySelector("#quiz-screen"),
     resultScreen: document.querySelector("#result-screen"),
+    theoryProgressCount: document.querySelector("#theory-progress-count"),
+    theoryProgressFill: document.querySelector("#theory-progress-fill"),
+    unitNav: document.querySelector("#unit-nav"),
+    unitNumber: document.querySelector("#unit-number"),
+    unitTitle: document.querySelector("#unit-title"),
+    unitSubtitle: document.querySelector("#unit-subtitle"),
+    unitDescription: document.querySelector("#unit-description"),
+    unitPathways: document.querySelector("#unit-pathways"),
+    unitSource: document.querySelector("#unit-source"),
+    unitSections: document.querySelector("#unit-sections"),
+    previousUnit: document.querySelector("#previous-unit"),
+    completeUnit: document.querySelector("#complete-unit"),
     progressLabel: document.querySelector("#progress-label"),
     answeredLabel: document.querySelector("#answered-label"),
     progressFill: document.querySelector("#progress-fill"),
@@ -35,6 +53,19 @@
   let quiz = [];
   let currentIndex = 0;
   let responses = new Map();
+  let activeUnitIndex = 0;
+  let showingResults = false;
+
+  const loadCompletedUnits = () => {
+    try {
+      const stored = JSON.parse(localStorage.getItem("completedTheoryUnits") ?? "[]");
+      return new Set(stored.filter((unitNumber) => Number.isInteger(unitNumber)));
+    } catch {
+      return new Set();
+    }
+  };
+
+  const completedUnits = loadCompletedUnits();
 
   const shuffle = (items) => {
     const result = [...items];
@@ -52,40 +83,133 @@
     return sortedLeft.every((value, index) => value === sortedRight[index]);
   };
 
-  const escapeHtml = (value) => String(value)
+  const escapeHtml = (value) => String(value ?? "")
     .replaceAll("&", "&amp;")
     .replaceAll("<", "&lt;")
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
 
-  const startQuiz = () => {
-    quiz = shuffle(questions).slice(0, Math.min(QUIZ_LENGTH, questions.length));
-    currentIndex = 0;
-    responses = new Map();
-    elements.resultScreen.hidden = true;
-    elements.quizScreen.hidden = false;
-    renderQuestion();
-    window.scrollTo({ top: 0, behavior: "smooth" });
+  const scrollToContent = () => {
+    const top = document.querySelector(".view-tabs").offsetTop - 12;
+    window.scrollTo({ top, behavior: "smooth" });
   };
 
-  const renderProgressSteps = () => {
-    elements.progressSteps.innerHTML = quiz.map((question, index) => {
-      const classes = ["progress-step"];
-      if (responses.has(question.id)) classes.push("is-answered");
-      if (index === currentIndex) classes.push("is-current");
-      return `<button class="${classes.join(" ")}" type="button" data-step="${index}" aria-label="${index + 1}-р асуулт"></button>`;
+  const setActiveTab = (view) => {
+    const theoryIsActive = view === "theory";
+    elements.theoryTab.classList.toggle("is-active", theoryIsActive);
+    elements.quizTab.classList.toggle("is-active", !theoryIsActive);
+    elements.theoryTab.setAttribute("aria-selected", String(theoryIsActive));
+    elements.quizTab.setAttribute("aria-selected", String(!theoryIsActive));
+  };
+
+  const showView = (view, { scroll = true } = {}) => {
+    const theoryIsActive = view === "theory";
+    setActiveTab(view);
+    elements.theoryScreen.hidden = !theoryIsActive;
+    elements.quizScreen.hidden = theoryIsActive || showingResults;
+    elements.resultScreen.hidden = theoryIsActive || !showingResults;
+    if (scroll) scrollToContent();
+  };
+
+  const saveTheoryProgress = () => {
+    localStorage.setItem("completedTheoryUnits", JSON.stringify([...completedUnits]));
+  };
+
+  const renderTheoryProgress = () => {
+    const completedCount = theoryUnits.filter((unit) => completedUnits.has(unit.number)).length;
+    const percent = theoryUnits.length === 0 ? 0 : (completedCount / theoryUnits.length) * 100;
+    elements.theoryProgressCount.textContent = `${completedCount} / ${theoryUnits.length}`;
+    elements.theoryProgressFill.style.width = `${percent}%`;
+  };
+
+  const renderTheoryNav = () => {
+    elements.unitNav.innerHTML = theoryUnits.map((unit, index) => {
+      const isActive = index === activeUnitIndex;
+      const isCompleted = completedUnits.has(unit.number);
+      return `
+        <button
+          class="unit-nav-button${isActive ? " is-active" : ""}"
+          type="button"
+          data-unit-index="${index}"
+          aria-current="${isActive ? "page" : "false"}"
+        >
+          <span class="unit-nav-number">U${unit.number}</span>
+          <span class="unit-nav-title">${escapeHtml(unit.title)}</span>
+          <span class="unit-nav-check" aria-label="${isCompleted ? "Уншсан" : "Уншаагүй"}">${isCompleted ? "✓" : ""}</span>
+        </button>
+      `;
     }).join("");
 
-    elements.progressSteps.querySelectorAll("[data-step]").forEach((button) => {
+    elements.unitNav.querySelectorAll("[data-unit-index]").forEach((button) => {
       button.addEventListener("click", () => {
-        currentIndex = Number(button.dataset.step);
-        renderQuestion();
+        activeUnitIndex = Number(button.dataset.unitIndex);
+        renderTheoryUnit();
+        scrollToContent();
       });
     });
   };
 
-  const renderQuestion = () => {
+  const renderTheorySections = (unit) => {
+    elements.unitSections.innerHTML = unit.sections.map((section, index) => {
+      const paragraphs = (section.paragraphs ?? [])
+        .map((paragraph) => `<p>${escapeHtml(paragraph)}</p>`)
+        .join("");
+      const bullets = section.bullets?.length
+        ? `<ul>${section.bullets.map((bullet) => `<li>${escapeHtml(bullet)}</li>`).join("")}</ul>`
+        : "";
+      const code = section.code
+        ? `
+          <div class="code-block">
+            <div class="code-label">${escapeHtml(section.codeLanguage ?? "Kotlin")}</div>
+            <pre><code>${escapeHtml(section.code)}</code></pre>
+          </div>
+        `
+        : "";
+      const note = section.note
+        ? `<div class="theory-note"><strong>Анхаарах нь:</strong> ${escapeHtml(section.note)}</div>`
+        : "";
+
+      return `
+        <section class="theory-section">
+          <span class="theory-section-number">${String(index + 1).padStart(2, "0")}</span>
+          <div>
+            <h3>${escapeHtml(section.title ?? "Нэмэлт ойлголт")}</h3>
+            ${paragraphs}
+            ${bullets}
+            ${code}
+            ${note}
+          </div>
+        </section>
+      `;
+    }).join("");
+  };
+
+  const renderTheoryUnit = () => {
+    const unit = theoryUnits[activeUnitIndex];
+    const isLastUnit = activeUnitIndex === theoryUnits.length - 1;
+    const isCompleted = completedUnits.has(unit.number);
+
+    elements.unitNumber.textContent = `Unit ${unit.number}`;
+    elements.unitTitle.textContent = unit.title;
+    elements.unitSubtitle.textContent = unit.subtitle;
+    elements.unitDescription.textContent = unit.description;
+    elements.unitPathways.innerHTML = unit.pathways
+      .map((pathway) => `<span class="pathway-tag">${escapeHtml(pathway)}</span>`)
+      .join("");
+    elements.unitSource.href = unit.source;
+    elements.previousUnit.disabled = activeUnitIndex === 0;
+    elements.completeUnit.innerHTML = isLastUnit
+      ? `${isCompleted ? "Дахин тест өгөх" : "Онол дуусгах · Тест өгөх"} <span aria-hidden="true">→</span>`
+      : `${isCompleted ? "Дараагийн unit" : "Уншиж дууссан"} <span aria-hidden="true">→</span>`;
+
+    renderTheorySections(unit);
+    renderTheoryNav();
+    renderTheoryProgress();
+    elements.statusMessage.textContent = `Unit ${unit.number}. ${unit.title}.`;
+  };
+
+  function renderQuestion() {
     const question = quiz[currentIndex];
     const selected = responses.get(question.id) ?? [];
     const answeredCount = responses.size;
@@ -108,12 +232,7 @@
       const inputType = question.multiple ? "checkbox" : "radio";
       return `
         <label class="option${isSelected ? " is-selected" : ""}">
-          <input
-            type="${inputType}"
-            name="answer"
-            value="${optionIndex}"
-            ${isSelected ? "checked" : ""}
-          />
+          <input type="${inputType}" name="answer" value="${optionIndex}" ${isSelected ? "checked" : ""} />
           <span class="option-key">${optionIndex + 1}</span>
           <span class="option-text">${escapeHtml(option)}</span>
         </label>
@@ -126,6 +245,35 @@
 
     renderProgressSteps();
     elements.statusMessage.textContent = `${currentIndex + 1}-р асуулт. ${question.topic}.`;
+  }
+
+  const resetQuiz = () => {
+    quiz = shuffle(questions).slice(0, Math.min(QUIZ_LENGTH, questions.length));
+    currentIndex = 0;
+    responses = new Map();
+    showingResults = false;
+    renderQuestion();
+  };
+
+  const startQuiz = () => {
+    resetQuiz();
+    showView("quiz");
+  };
+
+  const renderProgressSteps = () => {
+    elements.progressSteps.innerHTML = quiz.map((question, index) => {
+      const classes = ["progress-step"];
+      if (responses.has(question.id)) classes.push("is-answered");
+      if (index === currentIndex) classes.push("is-current");
+      return `<button class="${classes.join(" ")}" type="button" data-step="${index}" aria-label="${index + 1}-р асуулт"></button>`;
+    }).join("");
+
+    elements.progressSteps.querySelectorAll("[data-step]").forEach((button) => {
+      button.addEventListener("click", () => {
+        currentIndex = Number(button.dataset.step);
+        renderQuestion();
+      });
+    });
   };
 
   const handleAnswerChange = () => {
@@ -179,7 +327,9 @@
     const best = Math.max(previousBest, correct);
 
     localStorage.setItem("kotlinQuizBest", String(best));
-
+    showingResults = true;
+    setActiveTab("quiz");
+    elements.theoryScreen.hidden = true;
     elements.quizScreen.hidden = true;
     elements.resultScreen.hidden = false;
     elements.scoreRing.style.setProperty("--score", percent);
@@ -220,9 +370,35 @@
       }).join("");
     }
 
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    scrollToContent();
     elements.statusMessage.textContent = `Шалгалт дууслаа. ${quiz.length}-аас ${correct} зөв.`;
   };
+
+  elements.theoryTab.addEventListener("click", () => showView("theory"));
+  elements.quizTab.addEventListener("click", () => showView("quiz"));
+
+  elements.previousUnit.addEventListener("click", () => {
+    if (activeUnitIndex === 0) return;
+    activeUnitIndex -= 1;
+    renderTheoryUnit();
+    scrollToContent();
+  });
+
+  elements.completeUnit.addEventListener("click", () => {
+    const unit = theoryUnits[activeUnitIndex];
+    completedUnits.add(unit.number);
+    saveTheoryProgress();
+
+    if (activeUnitIndex === theoryUnits.length - 1) {
+      renderTheoryProgress();
+      startQuiz();
+      return;
+    }
+
+    activeUnitIndex += 1;
+    renderTheoryUnit();
+    scrollToContent();
+  });
 
   elements.previousButton.addEventListener("click", () => {
     if (currentIndex === 0) return;
@@ -251,11 +427,14 @@
     }
   });
 
-  if (questions.length < QUIZ_LENGTH) {
-    document.body.innerHTML = "<p>Асуултын өгөгдөл дутуу байна. quiz-data.js файлыг дахин үүсгэнэ үү.</p>";
+  if (questions.length < QUIZ_LENGTH || theoryUnits.length !== 7) {
+    document.body.innerHTML = "<p>Онол эсвэл асуултын өгөгдөл дутуу байна. Өгөгдлийн файлуудаа шалгана уу.</p>";
     return;
   }
 
   elements.bankCount.textContent = questions.length;
-  startQuiz();
+  renderTheoryUnit();
+  resetQuiz();
+  showView("theory", { scroll: false });
+  window.scrollTo({ top: 0, behavior: "auto" });
 })();
